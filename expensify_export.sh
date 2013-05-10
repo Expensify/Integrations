@@ -189,7 +189,7 @@ fi
 
 ## Test template file ##
 if [ ! -r $TEMPLATE_FILE ]; then
-    log "error" "credentials file $TEMPLATE_FILE not found"
+    log "error" "template file $TEMPLATE_FILE not found"
     exit 1
 fi
 
