@@ -23,7 +23,7 @@ The general flow of an integration is:
 
 2. Clone this repository to that directory using:
 
-        git checkout git@github.com:Expensify/Integrations.git
+        git clone git@github.com:Expensify/Integrations.git
 
 3. This will cause the repository to be cloned to an "Integrations" subdirectory (eg, "/expensify/Integrations").
 
