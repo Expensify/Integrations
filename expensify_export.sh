@@ -113,6 +113,11 @@ function process_args() {
                 EXPORT_FILE=$2
                 shift
                 ;;
+            "-t")
+                test_paired_args "$1" "$2"
+                TEMPLATE_FILE=$2
+                shift
+                ;;
             *)
                 log "error" "unrecognized parameter $1"
                 usage
