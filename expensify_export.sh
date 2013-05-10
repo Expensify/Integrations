@@ -12,7 +12,9 @@
 ### All rights reserved.
 ###############################################################
 
-###### Utility Functions ######
+###############################################################
+### Utility Functions
+###############################################################
 
 # build json object for POST
 function build_json_request() {
@@ -43,13 +45,13 @@ function log() {
     fi
 }
 
-# Parse wget output
-function parse_curl_output() {
-    #stripping the newlines out of the curl output
-    #to prevent unpredictable behavior
+# Parse curl output for known errors
+function parse_curl_status() {
     CURLEXIT="$1"
     shift
 
+    #stripping the newlines out of the curl output
+    #to prevent unpredictable behavior
     local CURLOUT="${@//[$'\r']/\r}"
     CURLOUT="${CURLOUT//[$'\n']/\n}"
     log "debug" "parse_curl_output(): $CURLOUT"
@@ -75,7 +77,12 @@ function parse_curl_output() {
     elif ( echo "$CURLOUT" | grep -q "500 Internal Server Error" ); then
         log "error" "curl returned 500, internal server error"
         exit 1
+    elif [ "$CURLEXIT" -ne 0 ]; then
+        log "warn" "curl request had an unknown error: $CURLOUT"
+    else
+        log "info" "curl request passed"
     fi
+
 }
 
 # Process command-line args
@@ -162,12 +169,15 @@ function usage() {
     PARAMS+=("[-v]")
     PARAMS+=("[-f export_filename]")
     PARAMS+=("[-c credentials_file]")
+    PARAMS+=("[-t template_file]")
 
     echo "usage: $0 ${PARAMS[@]}"
     exit 255
 }
 
-###### MAIN ######
+###############################################################
+### MAIN
+###############################################################
 preprocess_args "$@"
 test_required_cmds curl echo grep
 set_defaults
@@ -218,7 +228,7 @@ CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 CURL_OUTPUT=$(eval "$CURL_CMD")
 CURL_EXIT="$?"
-parse_curl_output "$CURL_EXIT" "$CURL_OUTPUT"
+parse_curl_status "$CURL_EXIT" "$CURL_OUTPUT"
 exit 1
 
 ATTEMPT_COUNT=0
@@ -231,7 +241,7 @@ while [[ "$DOWNLOAD_STATUS" != "true" ]]; do
     if [ $CURL_EXIT -ne 0 ]; then
         DOWNLOAD_STATUS="true"
     else
-        parse_curl_output "$CURL_EXIT" "$WGET_OUTPUT"
+        parse_curl_status "$CURL_EXIT" "$WGET_OUTPUT"
     fi
 
     let ATTEMPT_COUNT=$ATTEMPT_COUNT+1
