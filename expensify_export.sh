@@ -187,6 +187,12 @@ if [ -z $partnerUserID -o -z $partnerUserSecret ]; then
     exit 1
 fi
 
+## Test template file ##
+if [ ! -r $TEMPLATE_FILE ]; then
+    log "error" "credentials file $TEMPLATE_FILE not found"
+    exit 1
+fi
+
 ## Test export filepath ##
 EXPORT_DIR=$(dirname $EXPORT_FILE)
 log "debug" "export path: $EXPORT_DIR"
