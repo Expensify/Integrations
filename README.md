@@ -60,6 +60,7 @@ This GitHub repo contains the following high level resources:
     /README.md - This file
     /template_creds.sh - Template credential file
     /expensify_export.sh - Core automation utility
+    /IntegrationsFileFlowchart.png - Illustration of typical API flow
 
 Output format
 -------------
