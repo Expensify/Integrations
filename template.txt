@@ -1,0 +1,48 @@
+<#-- header -->
+reportID,accountID,reportName,managerID,managerEmail,accountEmail,created,total,status,<#t>
+state,submitted,currency,tag,approved,expense.transactionID,expense.unverified,<#t>
+expense.cardID,expense.reportID,expense.mcc,expense.tag,expense.currency,expense.billable,<#t>
+expense.amount,expense.inserted,expense.reimbursable,expense.details,expense.currencyConversionRate,<#t>
+expense.created,expense.modifiedAmount,expense.bank,expense.receiptID,expense.receiptFilename,<#t>
+expense.modifiedCreated,expense.merchant,expense.externalID,expense.convertedAmount,expense.modified,<#t>
+expense.category,expense.modifiedMerchant,expense.comment,expense.cardNumber,<#t>
+expense.transactionHash,expense.modifiedMCC,expense.receiptObject.thumbnail,<#t>
+expense.receiptObject.smallThumbnail,expense.receiptObject.formattedCreated,<#t>
+expense.receiptObject.state,expense.receiptObject.formattedMerchant,<#t>
+expense.receiptObject.transactionID,expense.receiptObject.type,<#t>
+expense.receiptObject.receiptID,expense.receiptObject.formattedAmount,<#t>
+expense.receiptObject.url
+<#-- end header -->
+<#list reports as report>
+    <#-- Because JSONObject is unordered, we hard code the order here -->
+    <#-- We also want to be able to change the model without breaking templates -->
+    <#-- So this is not used for customers, only as a template for testing -->
+    <#-- TODO Check for a no transaction report -->
+    <#-- We Need to consider NVPs in the comment field here -->
+    <#list report.transactionList as expense>
+        ${report.reportID},${report.accountID},${report.reportName},${report.managerID},<#t>
+        ${report.managerEmail},${report.accountEmail},${report.created},${report.total},<#t>
+        ${report.status},${report.state},${report.submitted},${report.currency},<#t>
+        ${report.tag},${report.approved},<#t>
+        ${expense.transactionID},${expense.unverified?string('true','false')},${expense.cardID},<#t>
+        ${expense.reportID},${expense.mcc},${expense.tag},${expense.currency},<#t>
+        ${expense.billable?string('true','false')},${expense.amount},${expense.inserted},${expense.reimbursable?string('true','false')},<#t>
+        ${expense.details},
+        ${expense.currencyConversionRate},
+        ${expense.created},
+        ${expense.modifiedAmount},<#t>
+        ${expense.bank},${expense.receiptID},${expense.receiptFilename},${expense.modifiedCreated},<#t>
+        ${expense.merchant},${expense.externalID},${expense.convertedAmount},${expense.modified?string('true','false')},<#t>
+        ${expense.category},${expense.modifiedMerchant},${expense.comment},${expense.cardNumber},<#t>
+        ${expense.transactionHash},${expense.modifiedMCC},<#t>
+        <#--The receipt object can be empty sometimes -->
+        <#if expense.receiptObject?has_content>
+            ${expense.receiptObject.thumbnail!},${expense.receiptObject.smallThumbnail!},<#t>
+            ${expense.receiptObject.formattedCreated!},${expense.receiptObject.state!},<#t>
+            ${expense.receiptObject.formattedMerchant!},${expense.receiptObject.transactionID!},<#t>
+            ${expense.receiptObject.type!},${expense.receiptObject.receiptID!},<#t>
+            ${expense.receiptObject.formattedAmount!},${expense.receiptObject.url!}
+            <#else>,,,,,,,,,,
+        </#if>
+    </#list>
+</#list>

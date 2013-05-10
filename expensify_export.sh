@@ -23,7 +23,7 @@ function build_json_request() {
     REQ+="'type':'file',"
     REQ+="'fileExtension':'csv',"
     REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
-    REQ+="'intputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED'},"
+    REQ+="'inputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED'},"
     REQ+="'inputData':{'customHeader':'',},"
     REQ+="'onFinish':{'foreachReport':[{'markAsExported':'csv'}],}"
     REQ+="}"
@@ -125,6 +125,7 @@ function process_args() {
 function set_defaults() {
     CREDS_FILE="./creds.sh"
     EXPORT_FILE="./expensify_export.$(date +'%Y%m%d').csv"
+    TEMPLATE_FILE="./template.txt"
 }
 
 # For command-line args that have a parameter
@@ -200,11 +201,11 @@ JSON=$(build_json_request)
 log "debug" "json_request: $JSON"
 
 ## execute curl export request ##
-CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data \"template=@./template.txt\" $URL"
+CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data \"template=@$TEMPLATE_FILE\" $URL"
+#CURL_OPTS="-sL -H 'Expect:' --data \""$JSON"\" --data \"template=foobar\" $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 CURL_OUTPUT=$(eval "$CURL_CMD")
-#CURL_OUTPUT=$(exec curl --include -sL -H 'Expect:' --data \""$JSON"\" $URL)
 CURL_EXIT="$?"
 parse_curl_output "$CURL_EXIT" "$CURL_OUTPUT"
 exit 1
