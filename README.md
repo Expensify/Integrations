@@ -11,13 +11,12 @@ This is a technical resource for developers and advanced finance teams to perfor
 * Intaact
 * NetSuite
 * Xero
-* SAP
 * Any file-based (CSV, XML, etc) import/export system
 
 For general information about Expensify, please see http://help.expensify.com, or email help@expensify.com.
 
-Integration overview
---------------------
+Export File Integration Overview
+--------------------------------
 The general flow of an integration is:
 
 1. Create a directory (eg, "/expensify") on either a desktop or server computer.
