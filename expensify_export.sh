@@ -16,8 +16,6 @@
 
 # build json object for POST
 function build_json_request() {
-    FOOBAR='aa_chris_expensify_com'
-    FOOBARY='86dd9af42ed4c7c1ce3a47caffbcc9731fc6ce57'
     REQ="requestJobDescription="
     REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
     REQ+="'partnerUserSecret':'$partnerUserSecret'},"
