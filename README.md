@@ -38,9 +38,9 @@ The general flow of an integration is:
 
 6. Choose to where you would like the export file downloaded (eg, "/tmp").
 
-7. Execute expensify_export.sh while providing the location to your credentials file and output directory:
+7. Execute expensify_export.sh while providing the location to your credentials file, output directory, and desired template:
 
-        ./expensify_export.sh /root/expensify_creds.sh /tmp
+        ./expensify_export.sh -c /root/expensify_creds.sh -F /tmp/exportfile -t templates/everything_csv.fm
 
 8. This will generate a request to the Expensify integration server to download a complete list of all expenses accessible by the configured user, and download into the output directory.
 
@@ -58,9 +58,11 @@ Structure of this repository
 This GitHub repo contains the following high level resources:
 
     /README.md - This file
-    /template_creds.sh - Template credential file
+    /creds.sh.sh - Template credential file
     /expensify_export.sh - Core automation utility
     /IntegrationsFileFlowchart.png - Illustration of typical API flow
+    /templates/ - Directory containing FreeMarker templates
+        everything_csv.fm - Creates a basic CSV containing everything
 
 Output format
 -------------
