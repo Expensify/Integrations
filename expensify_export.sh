@@ -18,17 +18,26 @@
 
 # build json object for POST
 function build_json_request() {
-    REQ="requestJobDescription="
-    REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
-    REQ+="'partnerUserSecret':'$partnerUserSecret'},"
-    REQ+="'test':'true',"
-    REQ+="'type':'file',"
-    REQ+="'fileExtension':'csv',"
-    REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
-    REQ+="'inputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED'},"
-    REQ+="'inputData':{'customHeader':'',},"
-    REQ+="'onFinish':{'foreachReport':[{'markAsExported':'csv'}],}"
-    REQ+="}"
+    local REQ_FUNCTION="$1"
+    if [ "$REQ_FUNCTION" == "requestExport" ]; then
+        local REQ="requestJobDescription="
+        REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
+        REQ+="'partnerUserSecret':'$partnerUserSecret'},"
+        #REQ+="'test':'true',"
+        REQ+="'type':'file',"
+        REQ+="'fileExtension':'csv',"
+        REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
+        REQ+="'inputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED'},"
+        REQ+="'inputData':{'customHeader':'',},"
+        REQ+="'onFinish':{'foreachReport':[{'markAsExported':'csv'}],}"
+        REQ+="}"
+    elif [ "$REQ_FUNCTION" == "getFile" ]; then
+        local TARGET="$2"
+        local REQ="requestJobDescription="
+        REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
+        REQ+="'partnerUserSecret':'$partnerUserSecret'},"
+        REQ+="'fileName':'$TARGET' }"
+    fi
     echo "$REQ"
 }
 
@@ -47,14 +56,11 @@ function log() {
 
 # Parse curl output for known errors
 function parse_curl_status() {
-    CURLEXIT="$1"
-    shift
-
     #stripping the newlines out of the curl output
     #to prevent unpredictable behavior
     local CURLOUT="${@//[$'\r']/\r}"
     CURLOUT="${CURLOUT//[$'\n']/\n}"
-    log "debug" "parse_curl_output(): $CURLOUT"
+    log "debug" "parse_curl_status(): $CURLOUT"
 
     if ( echo "$CURLOUT" | grep -q "400 - Bad Request" ); then
         log "error" "curl returned 400, badly formed request"
@@ -77,12 +83,9 @@ function parse_curl_status() {
     elif ( echo "$CURLOUT" | grep -q "500 Internal Server Error" ); then
         log "error" "curl returned 500, internal server error"
         exit 1
-    elif [ "$CURLEXIT" -ne 0 ]; then
-        log "warn" "curl request had an unknown error: $CURLOUT"
     else
         log "info" "curl request passed"
     fi
-
 }
 
 # Process command-line args
@@ -135,9 +138,17 @@ function process_args() {
 
 # Set script defaults, override with command-line args
 function set_defaults() {
+    # file containing the authentication credentials
     CREDS_FILE="./creds.sh"
-    EXPORT_FILE="./expensify_export.$(date +'%Y%m%d').csv"
+
+    # file containing the file export template
     TEMPLATE_FILE="./template.txt"
+
+    # filename where the downloaded file should be saved
+    EXPORT_FILE="./expensify_export.$(date +'%Y%m%d').csv"
+
+    # hostname for the expensify integrations server
+    HOSTNAME="pdftest.expensify.com"
 }
 
 # For command-line args that have a parameter
@@ -151,7 +162,7 @@ function test_paired_args() {
 
 # Test for commands that the script requires
 function test_required_cmds() {
-    CMDLIST="$@"
+    local CMDLIST="$@"
     log "debug" "testing availability of necessary commands"
     for cmd in $CMDLIST; do
         CMD=$(which $cmd)
@@ -212,32 +223,47 @@ if [ ! -d $EXPORT_DIR ] || [ ! -w $EXPORT_DIR ]; then
     exit 1
 fi
 
-## Build curl export request url ##
-HOSTNAME="pdftest.expensify.com"
+## Build curl export request ##
 URL="https://$HOSTNAME/Integration-Server/servlet/ExpensifyIntegrations"
-log "info" "sending curl request to $URL"
-
-## Build curl export request json ##
-JSON=$(build_json_request)
+JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
-
-## execute curl export request ##
-CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data \"template=@$TEMPLATE_FILE\" $URL"
+TEMPLATE_DATA=$(cat "$TEMPLATE_FILE" | tr '\n' ' ')
+echo "$TEMPLATE_DATA"
+CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data 'template=$TEMPLATE_DATA' $URL"
 #CURL_OPTS="-sL -H 'Expect:' --data \""$JSON"\" --data \"template=foobar\" $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
-CURL_OUTPUT=$(eval "$CURL_CMD")
-CURL_EXIT="$?"
-parse_curl_status "$CURL_EXIT" "$CURL_OUTPUT"
-exit 1
+log "info" "sending curl request to $URL"
 
+## execute curl export request ##
+CURL_OUTPUT=$(eval "$CURL_CMD")
+parse_curl_status "$CURL_OUTPUT"
+
+## capture exported filename ##
+EXPORTED_TARGET=$(echo "$CURL_OUTPUT" | grep -o "export[a-zA-Z0-9\-]*\.csv")
+if [ $? -ne 0 ]; then
+    log "error" "curl result didn't have a recognizable filename"
+    exit 1
+fi
+log "debug" "exported target filename: $EXPORTED_TARGET"
+
+## build curl getFile request ##
+URL="https://$HOSTNAME/Integration-Server/getFile"
+JSON=$(build_json_request "getFile" "$EXPORTED_TARGET")
+log "debug" "json_request: $JSON"
+CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' --data \""$JSON"\" -o $EXPORT_FILE $URL"
+CURL_CMD="curl $CURL_OPTS"
+log "debug" "curl command: $CURL_CMD"
+log "info" "sending curl request to $URL"
+
+## loop curl getFile requests ##
 ATTEMPT_COUNT=0
 DOWNLOAD_STATUS="false"
 while [[ "$DOWNLOAD_STATUS" != "true" ]]; do
     log "debug" "download attempt $ATTEMPT_COUNT"
-    URL="integrations.expensify.com/index.php"
-    CURL_OUTPUT=$(curl -o $EXPORT_FILE $URL 2>&1)
-    CURL_EXIT="$?"
+    CURL_OUTPUT=$(eval "$CURL_CMD")
+    parse_curl_status "$CURL_OUTPUT"
+
     if [ $CURL_EXIT -ne 0 ]; then
         DOWNLOAD_STATUS="true"
     else
