@@ -228,9 +228,7 @@ URL="https://$HOSTNAME/Integration-Server/servlet/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
 TEMPLATE_DATA=$(cat "$TEMPLATE_FILE" | tr '\n' ' ')
-echo "$TEMPLATE_DATA"
 CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data 'template=$TEMPLATE_DATA' $URL"
-#CURL_OPTS="-sL -H 'Expect:' --data \""$JSON"\" --data \"template=foobar\" $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 log "info" "sending curl request to $URL"
@@ -264,11 +262,11 @@ while [[ "$DOWNLOAD_STATUS" != "true" ]]; do
     CURL_OUTPUT=$(eval "$CURL_CMD")
     parse_curl_status "$CURL_OUTPUT"
 
-    if [ $CURL_EXIT -ne 0 ]; then
-        DOWNLOAD_STATUS="true"
-    else
-        parse_curl_status "$CURL_EXIT" "$WGET_OUTPUT"
-    fi
+    #if [ $CURL_EXIT -ne 0 ]; then
+        #DOWNLOAD_STATUS="true"
+    #else
+        #parse_curl_status "$CURL_EXIT" "$WGET_OUTPUT"
+    #fi
 
     let ATTEMPT_COUNT=$ATTEMPT_COUNT+1
     if [ $ATTEMPT_COUNT -ge 5 ]; then
