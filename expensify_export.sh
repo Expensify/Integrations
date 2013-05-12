@@ -62,7 +62,10 @@ function parse_curl_status() {
     CURLOUT="${CURLOUT//[$'\n']/\n}"
     log "debug" "parse_curl_status(): $CURLOUT"
 
-    if ( echo "$CURLOUT" | grep -q "400 - Bad Request" ); then
+    if ( echo "$CURLOUT" | grep -q "200 OK" ); then
+        log "info" "curl returned 200 success"
+        return
+    elif ( echo "$CURLOUT" | grep -q "400 - Bad Request" ); then
         log "error" "curl returned 400, badly formed request"
         exit 1
     elif ( echo "$CURLOUT" | grep -q "401 Unauthorized" ); then
@@ -84,7 +87,8 @@ function parse_curl_status() {
         log "error" "curl returned 500, internal server error"
         exit 1
     else
-        log "info" "curl request passed"
+        log "warn" "curl request passed with unknown status: $CURLOUT"
+        return 1
     fi
 }
 
@@ -149,6 +153,9 @@ function set_defaults() {
 
     # hostname for the expensify integrations server
     HOSTNAME="pdftest.expensify.com"
+
+    # maximum attempts to download the export file
+    MAX_DOWNLOAD_ATTEMPTS=30
 }
 
 # For command-line args that have a parameter
@@ -262,19 +269,20 @@ while [[ "$DOWNLOAD_STATUS" != "true" ]]; do
     CURL_OUTPUT=$(eval "$CURL_CMD")
     parse_curl_status "$CURL_OUTPUT"
 
-    #if [ $CURL_EXIT -ne 0 ]; then
-        #DOWNLOAD_STATUS="true"
-    #else
-        #parse_curl_status "$CURL_EXIT" "$WGET_OUTPUT"
-    #fi
+    CURL_EXIT=$?
+    if [ "$CURL_EXIT" -eq 0 ]; then
+        DOWNLOAD_STATUS="true"
+        break
+    fi
 
     let ATTEMPT_COUNT=$ATTEMPT_COUNT+1
-    if [ $ATTEMPT_COUNT -ge 5 ]; then
-        log "error" "download status still unsuccessful after 5 minutes"
+    if [ $ATTEMPT_COUNT -ge $MAX_DOWNLOAD_ATTEMPTS ]; then
+        log "error" "download status still unsuccessful after $MAX_DOWNLOAD_ATTEMPTS tries"
         exit 1
     fi
 
     sleep 5
+    log "info" "retrying curl request to $URL"
 done
 
 if [ "$DOWNLOAD_STATUS" == "true" ]; then
