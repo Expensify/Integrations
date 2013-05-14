@@ -23,11 +23,10 @@ function build_json_request() {
         local REQ="requestJobDescription="
         REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
         REQ+="'partnerUserSecret':'$partnerUserSecret'},"
-        #REQ+="'test':'true',"
         REQ+="'type':'file',"
         REQ+="'fileExtension':'csv',"
         REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
-        REQ+="'inputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED'},"
+        REQ+="'inputSettings':{'type':'combinedReportData','limit':'2','reportState':'SUBMITTED','filters':[{'csvExported':'false'}]},"
         REQ+="'inputData':{'customHeader':'',},"
         REQ+="'onFinish':{'foreachReport':[{'markAsExported':'csv'}],}"
         REQ+="}"
@@ -127,6 +126,11 @@ function process_args() {
                 EXPORT_FILE=$2
                 shift
                 ;;
+            "-F")
+                test_paired_args "$1" "$2"
+                EXPORT_FILEPATH=$2
+                shift
+                ;;
             "-t")
                 test_paired_args "$1" "$2"
                 TEMPLATE_FILE=$2
@@ -149,10 +153,13 @@ function set_defaults() {
     TEMPLATE_FILE="./template.txt"
 
     # filename where the downloaded file should be saved
-    EXPORT_FILE="./expensify_export.$(date +'%Y%m%d').csv"
+    EXPORT_FILEPATH="./"
+
+    # filename where the downloaded file should be saved
+    EXPORT_FILE="expensify_export.$(date +'%Y%m%d').csv"
 
     # hostname for the expensify integrations server
-    HOSTNAME="pdftest.expensify.com"
+    HOSTNAME="integrations.expensify.com"
 
     # maximum attempts to download the export file
     MAX_DOWNLOAD_ATTEMPTS=30
@@ -186,6 +193,7 @@ function usage() {
     PARAMS=()
     PARAMS+=("[-v]")
     PARAMS+=("[-f export_filename]")
+    PARAMS+=("[-F export_file_path]")
     PARAMS+=("[-c credentials_file]")
     PARAMS+=("[-t template_file]")
 
@@ -222,13 +230,13 @@ if [ ! -r $TEMPLATE_FILE ]; then
 fi
 
 ## Test export filepath ##
-EXPORT_DIR=$(dirname $EXPORT_FILE)
-log "debug" "export path: $EXPORT_DIR"
-log "debug" "export filename: $EXPORT_FILE"
+log "debug" "export file path: $EXPORT_FILEPATH"
 if [ ! -d $EXPORT_DIR ] || [ ! -w $EXPORT_DIR ]; then
-    log "error" "export filepath $EXPORT_DIR is not a writeable directory"
+    log "error" "export filepath $EXPORT_FILEPATH is not a writeable directory"
     exit 1
 fi
+EXPORT_FILE="$EXPORT_FILEPATH"+"$EXPORT_FILE"
+log "debug" "export filename: $EXPORT_FILE"
 
 ## Build curl export request ##
 URL="https://$HOSTNAME/Integration-Server/servlet/ExpensifyIntegrations"
@@ -250,7 +258,7 @@ if [ $? -ne 0 ]; then
     log "error" "curl result didn't have a recognizable filename"
     exit 1
 fi
-log "debug" "exported target filename: $EXPORTED_TARGET"
+log "info" "exported target filename: $EXPORTED_TARGET"
 
 ## build curl getFile request ##
 URL="https://$HOSTNAME/Integration-Server/getFile"
