@@ -14,11 +14,6 @@ expense.receiptObject.receiptID,expense.receiptObject.formattedAmount,<#t>
 expense.receiptObject.url
 <#-- end header -->
 <#list reports as report>
-    <#-- Because JSONObject is unordered, we hard code the order here -->
-    <#-- We also want to be able to change the model without breaking templates -->
-    <#-- So this is not used for customers, only as a template for testing -->
-    <#-- TODO Check for a no transaction report -->
-    <#-- We Need to consider NVPs in the comment field here -->
     <#list report.transactionList as expense>
         ${report.reportID},${report.accountID},${report.reportName},${report.managerID},<#t>
         ${report.managerEmail},${report.accountEmail},${report.created},${report.total},<#t>
