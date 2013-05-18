@@ -8,12 +8,11 @@ This is a technical resource for developers and advanced finance teams to perfor
 
 * Oracle (AP, iExpense)
 * SAP
-* Intaact
-* NetSuite
-* Xero
 * Any file-based (CSV, XML, etc) import/export system
 
 For general information about Expensify, please see http://help.expensify.com, or email help@expensify.com.
+
+Create your account credentials at https://www.expensify.com/tools/integrations
 
 Export File Integration Overview
 --------------------------------
