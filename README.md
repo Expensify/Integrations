@@ -28,7 +28,7 @@ The general flow of an integration is:
 
 4. Copy the template_expensify_creds.sh file provided in this repo someplace secure (eg, "/root"), and reduce permissions to the minimum (eg, chmod 0400).
 
-5. Rename your copy of template_expensify_creds.sh to something more meaningful (eg, "/root/expensify_creds.sh") and enter your unique account information:  (Write help@expensify.com to obtain this.)
+5. Rename your copy of template_expensify_creds.sh to something more meaningful (eg, "/root/expensify_creds.sh") and enter your unique account information.
     * *partnerName* - Typically the domain name of your company
     * *partnerSecret* - A random secret key assigned to you
     * *email* - Email address of the account as which to authenticate
