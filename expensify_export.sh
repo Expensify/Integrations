@@ -239,7 +239,7 @@ EXPORT_FILE="$EXPORT_FILEPATH"+"$EXPORT_FILE"
 log "debug" "export filename: $EXPORT_FILE"
 
 ## Build curl export request ##
-URL="https://$HOSTNAME/Integration-Server/servlet/ExpensifyIntegrations"
+URL="https://$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
 TEMPLATE_DATA=$(cat "$TEMPLATE_FILE" | tr '\n' ' ')
