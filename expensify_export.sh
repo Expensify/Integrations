@@ -23,6 +23,9 @@ function build_json_request() {
         local REQ="requestJobDescription="
         REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
         REQ+="'partnerUserSecret':'$partnerUserSecret'},"
+        if [ "$TEST_FLAG" == "true" ]; then
+            REQ+="'test':'true',"
+        fi
         REQ+="'type':'file',"
         REQ+="'fileExtension':'csv',"
         REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
@@ -110,30 +113,41 @@ function preprocess_args() {
 function process_args() {
     while [ -n "$1" ]; do
         case $1 in
+            # Triggers the usage/help output function
             "--help" | "-?")
                 #already handled in preprocess_args
                 ;;
+            # Sets the global verbose property 
             "-v")
                 #already handled in preprocess_args
                 ;;
+            # Specify the credentials file
             "-c")
                 test_paired_args "$1" "$2"
                 CREDS_FILE=$2
                 shift
                 ;;
+            # Specify the export filename
             "-f")
                 test_paired_args "$1" "$2"
                 EXPORT_FILE=$2
                 shift
                 ;;
+            # Specify the file path for export files
             "-F")
                 test_paired_args "$1" "$2"
                 EXPORT_FILEPATH=$2
                 shift
                 ;;
+            # Specify the template file location
             "-t")
                 test_paired_args "$1" "$2"
                 TEMPLATE_FILE=$2
+                shift
+                ;;
+            # Adds "test" parameter to JSON
+            "-T")
+                TEST_FLAG="true"
                 shift
                 ;;
             *)
@@ -191,7 +205,7 @@ function test_required_cmds() {
 # Display Usage
 function usage() {
     PARAMS=()
-    PARAMS+=("[-v]")
+    PARAMS+=("[-Tv]")
     PARAMS+=("[-f export_filename]")
     PARAMS+=("[-F export_file_path]")
     PARAMS+=("[-c credentials_file]")
@@ -235,7 +249,7 @@ if [ ! -d $EXPORT_DIR ] || [ ! -w $EXPORT_DIR ]; then
     log "error" "export filepath $EXPORT_FILEPATH is not a writeable directory"
     exit 1
 fi
-EXPORT_FILE="$EXPORT_FILEPATH"+"$EXPORT_FILE"
+EXPORT_FILE="$EXPORT_FILEPATH""$EXPORT_FILE"
 log "debug" "export filename: $EXPORT_FILE"
 
 ## Build curl export request ##
