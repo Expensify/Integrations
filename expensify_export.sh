@@ -29,7 +29,7 @@ function build_json_request() {
         REQ+="'type':'file',"
         REQ+="'outputSettings':{'fileExtension':'csv'},"
         REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
-        REQ+="'inputSettings':{'type':'combinedReportData','reportState':'REIMBURSED','filters':[{'markedAsExported':'Oracle','startDate':'2013-05-27'}]},"
+        REQ+="'inputSettings':{'type':'combinedReportData','reportState':'REIMBURSED','filters':{'markedAsExported':'Oracle','startDate':'2013-05-27'}},"
         REQ+="'onFinish':{'foreachReport':[{'markAsExported':'Oracle'}]}"
         REQ+="}"
     elif [ "$REQ_FUNCTION" == "getFile" ]; then
