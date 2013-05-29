@@ -29,7 +29,7 @@ function build_json_request() {
         REQ+="'type':'file',"
         REQ+="'outputSettings':{'fileExtension':'csv'},"
         REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
-        REQ+="'inputSettings':{'type':'combinedReportData','reportState':'REIMBURSED','filters':{'markedAsExported':'Oracle','startDate':'2013-05-27'}},"
+        REQ+="'inputSettings':{'type':'combinedReportData','reportState':'REIMBURSED','filters':{'markedAsExported':'Oracle','startDate':'2013-01-01'}},"
         REQ+="'onFinish':{'foreachReport':[{'markAsExported':'Oracle'}]}"
         REQ+="}"
     elif [ "$REQ_FUNCTION" == "getFile" ]; then
@@ -256,7 +256,7 @@ URL="https://$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
 TEMPLATE_DATA=$(cat "$TEMPLATE_FILE" | tr '\n' ' ')
-CURL_OPTS="--include -sL -H 'Expect:' --data \""$JSON"\" --data 'template=$TEMPLATE_DATA' $URL"
+CURL_OPTS="--include -sL -H 'Expect:' --data-urlencode \""$JSON"\" --data-urlencode 'template=$TEMPLATE_DATA' $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 log "info" "sending curl request to $URL"
@@ -277,7 +277,7 @@ log "info" "exported target filename: $EXPORTED_TARGET"
 URL="https://$HOSTNAME/Integration-Server/getFile"
 JSON=$(build_json_request "getFile" "$EXPORTED_TARGET")
 log "debug" "json_request: $JSON"
-CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' --data \""$JSON"\" -o $EXPORT_FILE $URL"
+CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' --data-urlencode \""$JSON"\" -o $EXPORT_FILE $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 log "info" "sending curl request to $URL"
