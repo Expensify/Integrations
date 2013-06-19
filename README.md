@@ -113,6 +113,11 @@ This system will output a CSV file containing the following columns:
 * *expense.receiptObject.receiptID* -
 * *expense.receiptObject.formattedAmount* -
 * *expense.receiptObject.url* -
+* *expense.categoryGlCode* -
+* *expense.categoryPayrollCode* -
+* *expense.tagGlCode* -
+* *report.managerPayrollID* -
+* *report.submitterPayrollID* -
 
 Custom output formats
 ---------------------
