@@ -255,7 +255,7 @@ log "debug" "export filename: $EXPORT_FILE"
 URL="https://$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
-TEMPLATE_DATA=$(cat "$TEMPLATE_FILE" | tr '\n' ' ')
+TEMPLATE_DATA=$(cat "$TEMPLATE_FILE")
 CURL_OPTS="--include -sL -H 'Expect:' --data-urlencode \""$JSON"\" --data-urlencode 'template=$TEMPLATE_DATA' $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
