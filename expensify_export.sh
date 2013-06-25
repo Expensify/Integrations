@@ -30,7 +30,7 @@ function build_json_request() {
         REQ+="'outputSettings':{'fileExtension':'csv'},"
         REQ+="'onReceive':{'immediateResponse':['returnRandomFileName']},"
         REQ+="'inputSettings':{'type':'combinedReportData','reportState':'REIMBURSED','filters':{'markedAsExported':'Oracle','startDate':'2013-01-01'}},"
-        REQ+="'onFinish':{'foreachReport':[{'markAsExported':'Oracle'}]}"
+        REQ+="'onFinish':[{"actionName":"markAsExported","label":"Oracle"}]"
         REQ+="}"
     elif [ "$REQ_FUNCTION" == "getFile" ]; then
         local TARGET="$2"
