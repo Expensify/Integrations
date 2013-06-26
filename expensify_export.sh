@@ -149,6 +149,11 @@ function process_args() {
                 TEST_FLAG="true"
                 shift
                 ;;
+            # Adds support for older versions of curl
+            "-p")
+                CURL_DATA_FLAG="--data"
+                shift
+                ;;
             *)
                 log "error" "unrecognized parameter $1"
                 usage
@@ -213,13 +218,17 @@ function test_required_cmds() {
 # Display Usage
 function usage() {
     PARAMS=()
-    PARAMS+=("[-Tv]")
+    PARAMS+=("[-Tvp]")
     PARAMS+=("[-f export_filename]")
     PARAMS+=("[-F export_file_path]")
     PARAMS+=("[-c credentials_file]")
     PARAMS+=("[-t template_file]")
 
-    echo "usage: $0 ${PARAMS[@]}"
+    echo "Usage: $0 ${PARAMS[@]}"
+    echo "Options:"
+    echo "  -T      Test the export: do not flag reports as exported, allowing for repeated export"
+    echo "  -v      Verbose output: useful for debugging and testing"
+    echo "  -p      Preencoded: Template file is URL encoded so do not use curl's data-urlencode (for curl version < 7.18.0)"
     exit 255
 }
 
