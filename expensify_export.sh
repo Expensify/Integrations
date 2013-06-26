@@ -172,7 +172,16 @@ function set_defaults() {
     EXPORT_FILE="expensify_export.$(date +'%Y%m%d').csv"
 
     # hostname for the expensify integrations server
-    HOSTNAME="integrations.expensify.com"
+    HOSTNAME="https://integrations.expensify.com"
+
+    # If your version of curl is < 7.18.0, you can't use
+    # --data-urlencode, so provide a mechanism to turn that off
+    # For versions that don't have --data-urlencode, use --data.
+    # Do not make this a command line argument because your
+    # option config and md template will need to be encoded
+    # specifically for this environment and you cannot flip
+    # between.
+    CURL_DATA_FLAG="--data-urlencode"
 
     # maximum attempts to download the export file
     MAX_DOWNLOAD_ATTEMPTS=30
@@ -252,11 +261,11 @@ EXPORT_FILE="$EXPORT_FILEPATH""$EXPORT_FILE"
 log "debug" "export filename: $EXPORT_FILE"
 
 ## Build curl export request ##
-URL="https://$HOSTNAME/Integration-Server/ExpensifyIntegrations"
+URL="$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
 TEMPLATE_DATA=$(cat "$TEMPLATE_FILE")
-CURL_OPTS="--include -sL -H 'Expect:' --data-urlencode \""$JSON"\" --data-urlencode 'template=$TEMPLATE_DATA' $URL"
+CURL_OPTS="--include -sL -H 'Expect:' $CURL_DATA_FLAG \""$JSON"\" $CURL_DATA_FLAG 'template=$TEMPLATE_DATA' $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 log "info" "sending curl request to $URL"
@@ -274,10 +283,10 @@ fi
 log "info" "exported target filename: $EXPORTED_TARGET"
 
 ## build curl getFile request ##
-URL="https://$HOSTNAME/Integration-Server/getFile"
+URL="$HOSTNAME/Integration-Server/getFile"
 JSON=$(build_json_request "getFile" "$EXPORTED_TARGET")
 log "debug" "json_request: $JSON"
-CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' --data-urlencode \""$JSON"\" -o $EXPORT_FILE $URL"
+CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' $CURL_DATA_FLAG \""$JSON"\" -o $EXPORT_FILE $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
 log "info" "sending curl request to $URL"
