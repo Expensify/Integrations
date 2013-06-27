@@ -149,9 +149,9 @@ function process_args() {
                 TEST_FLAG="true"
                 shift
                 ;;
-            # Adds support for older versions of curl
+            # Force support for an older version of curl
             "-p")
-                CURL_DATA_FLAG="--data"
+                CURL_SUPPORTS_DATA_URLENCODE=false
                 shift
                 ;;
             *)
@@ -160,6 +160,22 @@ function process_args() {
         esac
         shift
     done
+}
+
+function rawurlencode() {
+  local string="$1"
+  local strlen=${#string}
+  local encoded=""
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "$encoded"
 }
 
 # Set script defaults, override with command-line args
@@ -181,12 +197,9 @@ function set_defaults() {
 
     # If your version of curl is < 7.18.0, you can't use
     # --data-urlencode, so provide a mechanism to turn that off
-    # For versions that don't have --data-urlencode, use --data.
-    # Do not make this a command line argument because your
-    # option config and md template will need to be encoded
-    # specifically for this environment and you cannot flip
-    # between.
-    CURL_DATA_FLAG="--data-urlencode"
+    # For versions that don't have --data-urlencode, use --data and then
+    # urlencode it yourself
+    CURL_SUPPORTS_DATA_URLENCODE=true
 
     # maximum attempts to download the export file
     MAX_DOWNLOAD_ATTEMPTS=30
@@ -228,7 +241,7 @@ function usage() {
     echo "Options:"
     echo "  -T      Test the export: do not flag reports as exported, allowing for repeated export"
     echo "  -v      Verbose output: useful for debugging and testing"
-    echo "  -p      Preencoded: Template file is URL encoded so do not use curl's data-urlencode (for curl version < 7.18.0)"
+    echo "  -p      Curlless URL encode: URL encode template using bash instead of curl (for curl version < 7.18.0)"
     exit 255
 }
 
@@ -239,6 +252,20 @@ preprocess_args "$@"
 test_required_cmds curl echo grep
 set_defaults
 process_args "$@"
+
+# If we think we can use curl data-urlencode, double check and override if not
+if $CURL_SUPPORTS_DATA_URLENCODE ; then
+    log "debug" "Claiming to be able to use curl data-urlencode, checking version"
+    CURL_VERSION=$(curl --version | grep -oE '^curl ([0-9.]+)' | cut -f2 --delimiter=" ")
+    CURL_MIN_VERSION_MAJOR=7
+    CURL_MIN_VERSION_MINOR=18
+    CURL_MIN_VERSION_BUILD=0
+
+    if [ $CURL_MIN_VERSION_MAJOR -gt $( echo $CURL_VERSION | cut -f1 -d "." ) -o $CURL_MIN_VERSION_MINOR -gt $( echo $CURL_VERSION | cut -f2 -d "." ) -o $CURL_MIN_VERSION_BUILD -gt $( echo $CURL_VERSION | cut -f3 -d "." ) ]; then
+        log "info" "Curl version does not support data-urlencode, so switching to bash urlencode (use -p to avoid this message)"
+        CURL_SUPPORTS_DATA_URLENCODE=false
+    fi
+fi
 
 ## Test and import creds file ##
 if [ ! -r $CREDS_FILE ]; then
@@ -269,11 +296,19 @@ fi
 EXPORT_FILE="$EXPORT_FILEPATH""$EXPORT_FILE"
 log "debug" "export filename: $EXPORT_FILE"
 
+## Update the template_data to be urlencoded if needed
+TEMPLATE_DATA=$(cat "$TEMPLATE_FILE")
+if $CURL_SUPPORTS_DATA_URLENCODE ; then
+    CURL_DATA_FLAG="--data-urlencode"
+else
+    CURL_DATA_FLAG="--data"
+    TEMPLATE_DATA=$(rawurlencode "$TEMPLATE_DATA")
+fi
+
 ## Build curl export request ##
 URL="$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "requestExport")
 log "debug" "json_request: $JSON"
-TEMPLATE_DATA=$(cat "$TEMPLATE_FILE")
 CURL_OPTS="--include -sL -H 'Expect:' $CURL_DATA_FLAG \""$JSON"\" $CURL_DATA_FLAG 'template=$TEMPLATE_DATA' $URL"
 CURL_CMD="curl $CURL_OPTS"
 log "debug" "curl command: $CURL_CMD"
