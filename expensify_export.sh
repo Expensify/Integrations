@@ -1,5 +1,5 @@
 #!/bin/bash
-
+EXPENSIFY_EXPORT_VERSION=1.2
 ###############################################################
 ### expensify_export.sh - issues a request for an Expensify
 ### export file, and downloads the file
@@ -102,6 +102,9 @@ function preprocess_args() {
                 ;;
             "-v")
                 VERBOSE=true
+                ;;
+            "--version")
+                version
                 ;;
         esac
         shift
@@ -242,6 +245,11 @@ function usage() {
     echo "  -T      Test the export: do not flag reports as exported, allowing for repeated export"
     echo "  -v      Verbose output: useful for debugging and testing"
     echo "  -p      Curlless URL encode: URL encode template using bash instead of curl (for curl version < 7.18.0)"
+    exit 255
+}
+
+function version() {
+    echo "$0 version $EXPENSIFY_EXPORT_VERSION"
     exit 255
 }
 
