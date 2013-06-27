@@ -197,8 +197,8 @@ function set_defaults() {
 
     # If your version of curl is < 7.18.0, you can't use
     # --data-urlencode, so provide a mechanism to turn that off
-    # For versions that don't have --data-urlencode, use --data and then
-    # urlencode it yourself
+    # For versions that don't have --data-urlencode we encode it in bash which
+    # is a bit hacky.  Avoid if you can.
     CURL_SUPPORTS_DATA_URLENCODE=true
 
     # maximum attempts to download the export file
@@ -249,7 +249,7 @@ function usage() {
 ### MAIN
 ###############################################################
 preprocess_args "$@"
-test_required_cmds curl echo grep
+test_required_cmds curl echo grep cut
 set_defaults
 process_args "$@"
 
@@ -261,7 +261,9 @@ if $CURL_SUPPORTS_DATA_URLENCODE ; then
     CURL_MIN_VERSION_MINOR=18
     CURL_MIN_VERSION_BUILD=0
 
-    if [ $CURL_MIN_VERSION_MAJOR -gt $( echo $CURL_VERSION | cut -f1 -d "." ) -o $CURL_MIN_VERSION_MINOR -gt $( echo $CURL_VERSION | cut -f2 -d "." ) -o $CURL_MIN_VERSION_BUILD -gt $( echo $CURL_VERSION | cut -f3 -d "." ) ]; then
+    if [ $CURL_MIN_VERSION_MAJOR -le $( echo $CURL_VERSION | cut -f1 -d "." ) -a $CURL_MIN_VERSION_MINOR -le $( echo $CURL_VERSION | cut -f2 -d "." ) -a $CURL_MIN_VERSION_BUILD -le $( echo $CURL_VERSION | cut -f3 -d "." ) ]; then
+        log "debug" "Compatible curl version.  Using data-urlencode."
+    else
         log "info" "Curl version does not support data-urlencode, so switching to bash urlencode (use -p to avoid this message)"
         CURL_SUPPORTS_DATA_URLENCODE=false
     fi
