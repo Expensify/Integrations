@@ -181,6 +181,37 @@ function rawurlencode() {
   echo "$encoded"
 }
 
+version_cmp () {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
 # Set script defaults, override with command-line args
 function set_defaults() {
     # file containing the authentication credentials
@@ -203,6 +234,7 @@ function set_defaults() {
     # For versions that don't have --data-urlencode we encode it in bash which
     # is a bit hacky.  Avoid if you can.
     CURL_SUPPORTS_DATA_URLENCODE=true
+    CURL_MIN_REQUIRED_VERSION="7.18.0"
 
     # maximum attempts to download the export file
     MAX_DOWNLOAD_ATTEMPTS=30
@@ -262,17 +294,16 @@ set_defaults
 process_args "$@"
 
 # If we think we can use curl data-urlencode, double check and override if not
-if $CURL_SUPPORTS_DATA_URLENCODE ; then
-    log "debug" "Claiming to be able to use curl data-urlencode, checking version"
-    CURL_VERSION=$(curl --version | grep -oE '^curl ([0-9.]+)' | cut -f2 --delimiter=" ")
-    CURL_MIN_VERSION_MAJOR=7
-    CURL_MIN_VERSION_MINOR=18
-    CURL_MIN_VERSION_BUILD=0
+CURL_VERSION=$(curl --version | grep -oE '^curl ([0-9.]+)' | cut -f2 --delimiter=" ")
 
-    if [ $CURL_MIN_VERSION_MAJOR -le $( echo $CURL_VERSION | cut -f1 -d "." ) -a $CURL_MIN_VERSION_MINOR -le $( echo $CURL_VERSION | cut -f2 -d "." ) -a $CURL_MIN_VERSION_BUILD -le $( echo $CURL_VERSION | cut -f3 -d "." ) ]; then
-        log "debug" "Compatible curl version.  Using data-urlencode."
-    else
-        log "info" "Curl version does not support data-urlencode, so switching to bash urlencode (use -p to avoid this message)"
+version_cmp "$CURL_MIN_REQUIRED_VERSION" "$CURL_VERSION"
+CURL_SUPPORTS_URLENCODE=$?
+
+log "debug" "Version compare for curl returned $CURL_SUPPORTS_URLENCODE for $CURL_VERSION"
+
+if [ $CURL_SUPPORTS_DATA_URLENCODE ]; then
+    if [ $CURL_SUPPORTS_URLENCODE -eq 1 ]; then
+        log "info" "Installed version of curl doesn't support data-urlencode. (Use -p to avoid this message)"
         CURL_SUPPORTS_DATA_URLENCODE=false
     fi
 fi
