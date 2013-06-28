@@ -271,12 +271,14 @@ function usage() {
     PARAMS+=("[-F export_file_path]")
     PARAMS+=("[-c credentials_file]")
     PARAMS+=("[-t template_file]")
+    PARAMS+=("[--version]")
 
     echo "Usage: $0 ${PARAMS[@]}"
     echo "Options:"
-    echo "  -T      Test the export: do not flag reports as exported, allowing for repeated export"
-    echo "  -v      Verbose output: useful for debugging and testing"
-    echo "  -p      Curlless URL encode: URL encode template using bash instead of curl (for curl version < 7.18.0)"
+    echo "  -T          Test the export: do not flag reports as exported, allowing for repeated export"
+    echo "  -v          Verbose output: useful for debugging and testing"
+    echo "  -p          Curlless URL encode: URL encode template using bash instead of curl (for curl version < 7.18.0)"
+    echo "  --version   Show the version number and exit"
     exit 255
 }
 
