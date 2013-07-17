@@ -118,6 +118,7 @@ This system will output a CSV file containing the following columns:
 * *expense.tagGlCode* -
 * *report.managerPayrollID* -
 * *report.submitterPayrollID* -
+* *report.policyName* -
 
 Custom output formats
 ---------------------
