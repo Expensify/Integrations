@@ -1,5 +1,5 @@
 #!/bin/bash
-EXPENSIFY_EXPORT_VERSION=1.2
+EXPENSIFY_EXPORT_VERSION=1.3
 ###############################################################
 ### expensify_export.sh - issues a request for an Expensify
 ### export file, and downloads the file
@@ -370,7 +370,7 @@ fi
 log "info" "exported target filename: $EXPORTED_TARGET"
 
 ## build curl getFile request ##
-URL="$HOSTNAME/Integration-Server/getFile"
+URL="$HOSTNAME/Integration-Server/ExpensifyIntegrations"
 JSON=$(build_json_request "getFile" "$EXPORTED_TARGET")
 log "debug" "json_request: $JSON"
 CURL_OPTS="-sL -D /dev/stdout -H 'Expect:' $CURL_DATA_FLAG \""$JSON"\" -o $EXPORT_FILE $URL"
