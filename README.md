@@ -116,6 +116,9 @@ This system will output a CSV file containing the following columns:
 * *expense.categoryGlCode* -
 * *expense.categoryPayrollCode* -
 * *expense.tagGlCode* -
+* *expense.hasTax* -
+* *expense.taxRate* - set only if *expense.hasTax* is `true`
+* *expense.taxAmount* - set only if *expense.hasTax* is `true`
 * *report.managerPayrollID* -
 * *report.submitterPayrollID* -
 * *report.policyName* -
