@@ -127,6 +127,7 @@ This system will output a CSV file containing the following columns:
 * *report.managerPayrollID* -
 * *report.submitterPayrollID* -
 * *report.policyName* -
+* *report.customField.Name_of_Report_Field* - formula to export report field "Name of Report Field". All non-alphanumerical characters must be replaced with an underscore.
 
 Custom output formats
 ---------------------
