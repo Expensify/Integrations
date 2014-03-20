@@ -128,6 +128,7 @@ This system will output a CSV file containing the following columns:
 * *report.submitterPayrollID* -
 * *report.policyName* -
 * *report.customField.Name_of_Report_Field* - formula to export report field "Name of Report Field". All non-alphanumerical characters must be replaced with an underscore.
+* *report.approvers* - array that contains the list of all approvers of the report. Each is represented by an object containing an `email`, and `employeeUserID` and `employeePayrollID` if they are defined in the report's policy.
 
 Custom output formats
 ---------------------
