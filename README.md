@@ -120,6 +120,7 @@ This system will output a CSV file containing the following columns:
 * *expense.taxRate* - set only if *expense.hasTax* is `true`
 * *expense.taxAmount* - set only if *expense.hasTax* is `true`
 * *expense.taxName* - set only if *expense.hasTax* is `true`
+* *expense.taxRateName* - set only if *expense.hasTax* is `true`
 * *expense.type* - one of `expense`, `distance` or `time`
 * *expense.units.unit* - set only if *expense.type* is `distance` or `time`
 * *expense.units.rate* - set only if *expense.type* is `distance` or `time`
