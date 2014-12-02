@@ -1,5 +1,5 @@
 #!/bin/bash
-EXPENSIFY_EXPORT_VERSION=1.3
+EXPENSIFY_EXPORT_VERSION=1.3.1
 ###############################################################
 ### expensify_export.sh - issues a request for an Expensify
 ### export file, and downloads the file
@@ -37,6 +37,7 @@ function build_json_request() {
         local REQ="requestJobDescription="
         REQ+="{'credentials':{'partnerUserID':'$partnerUserID',"
         REQ+="'partnerUserSecret':'$partnerUserSecret'},"
+        REQ+="'type':'download',"
         REQ+="'fileName':'$TARGET' }"
     fi
     echo "$REQ"
