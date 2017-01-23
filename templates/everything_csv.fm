@@ -22,9 +22,9 @@ expense.receiptObject.url
         ${expense.transactionID},${expense.unverified?string('true','false')},${expense.cardID},<#t>
         ${expense.reportID},${expense.mcc},${expense.tag},${expense.currency},<#t>
         ${expense.billable?string('true','false')},${expense.amount},${expense.inserted},${expense.reimbursable?string('true','false')},<#t>
-        ${expense.details},
-        ${expense.currencyConversionRate},
-        ${expense.created},
+        ${expense.details},<#t>
+        ${expense.currencyConversionRate},<#t>
+        ${expense.created},<#t>
         ${expense.modifiedAmount},<#t>
         ${expense.bank},${expense.receiptID},${expense.receiptFilename},${expense.modifiedCreated},<#t>
         ${expense.merchant},${expense.externalID},${expense.convertedAmount},${expense.modified?string('true','false')},<#t>
